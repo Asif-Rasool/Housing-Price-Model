@@ -1,23 +1,21 @@
+
 import streamlit as st
 import pandas as pd
 import shap
 import matplotlib.pyplot as plt
 import pickle
-import gdown  # <-- NEW
+import gdown
 from PIL import Image
 import os
 from sklearn.datasets import fetch_california_housing
 import plotly.express as px
 import numpy as np
 import seaborn as sns
-import plotly.express as px
-
 
 # --- Page config ---
 st.set_page_config(layout="wide")
 
 @st.cache_data
-# --- Helper to download from Google Drive using gdown ---
 def download_from_drive(file_id, output_path):
     url = f"https://drive.google.com/uc?id={file_id}"
     if not os.path.exists(output_path):
@@ -27,16 +25,25 @@ def download_from_drive(file_id, output_path):
 MODEL_FILE_ID = "1ZtvYIBsA5orD6i0FtXRDO9RIffSt4S4t"
 SHAP_FILE_ID = "15Z44AWYmSu8gmOUN6RpkZMxx81r32OPy"
 X_FILE_ID = "1gdIsz-HuVba7xEqG9UHWroaePtXJ8ULT"
+EDA_HIST_ID = "1RMeqV2Fk_K6b073q3qof2Cyjxzc7DIEr"
+EDA_CORR_ID = "1re5OFYiDkvhWQtYOoATULY9sb1bghxLW"
+EDA_PAIR_ID = "1HsK0pVUcQAQXXbLsbUHDAwDflzTgui3q"
 
 # --- File paths ---
 MODEL_PATH = "housing_price_model.pkl"
 SHAP_PATH = "shap_values.pkl"
 X_PATH = "X_features.pkl"
+EDA_HIST = "eda_univariate_hist.png"
+EDA_CORR = "eda_correlation_matrix.png"
+EDA_PAIR = "eda_pairplot_matrix.png"
 
 # --- Download necessary files ---
 download_from_drive(MODEL_FILE_ID, MODEL_PATH)
 download_from_drive(SHAP_FILE_ID, SHAP_PATH)
 download_from_drive(X_FILE_ID, X_PATH)
+download_from_drive(EDA_HIST_ID, EDA_HIST)
+download_from_drive(EDA_CORR_ID, EDA_CORR)
+download_from_drive(EDA_PAIR_ID, EDA_PAIR)
 
 # --- Load model and SHAP data ---
 with open(MODEL_PATH, 'rb') as f:
@@ -136,53 +143,25 @@ prediction = model.predict(df_input)
 # --- Display maps ---
 st.write("---")
 
-# Sample 1000 points for map performance
-df_sample = df_california.sample(1000, random_state=42).copy()
-X_map = df_sample.drop(columns="MedHouseVal")
-df_sample["PredictedPrice"] = model.predict(X_map) * 100000
-
-# --- Layout with three columns ---
 col_left, col_mid, col_right = st.columns([0.1, 1.5, 1])
 
-# --- Middle Column: Show input and prediction ---
 with col_mid:
     st.header("📋 Specified Input Parameters")
     st.dataframe(df_input, use_container_width=True)
     st.write("---")
-
     st.header("📈 Predicted Median House Value")
     st.success(f"🏡 **Estimated Value:** ${prediction[0] * 100000:,.2f}")
     st.write("---")
 
     st.header("🗺️ Geospatial View of Predicted Housing Prices")
-
-    # Sample and prepare data
     df_sample = df_california.sample(1000, random_state=42).copy()
     X_map = df_sample.drop(columns="MedHouseVal")
     df_sample["PredictedPrice"] = model.predict(X_map) * 100000
     df_sample.rename(columns={"MedInc": "MedianIncome"}, inplace=True)
-
-    # Plotly map
-    fig = px.scatter_mapbox(
-        df_sample,
-        lat="Latitude",
-        lon="Longitude",
-        color="PredictedPrice",
-        size="PredictedPrice",
-        size_max=15,
-        zoom=4.5,
-        mapbox_style="carto-positron",
-        color_continuous_scale="YlOrRd",
-        hover_data={
-            "PredictedPrice": True,
-            "Latitude": True,
-            "Longitude": True,
-            "MedianIncome": True,
-            "HouseAge": True
-        },
-        title="Predicted Median House Values Across California"
-    )
-
+    fig = px.scatter_mapbox(df_sample, lat="Latitude", lon="Longitude", color="PredictedPrice", size="PredictedPrice",
+                            size_max=15, zoom=4.5, mapbox_style="carto-positron",
+                            color_continuous_scale="YlOrRd",
+                            hover_data={"PredictedPrice": True, "Latitude": True, "Longitude": True, "MedianIncome": True})
     st.plotly_chart(fig, use_container_width=True)
 
 # --- EDA Section ---
@@ -190,8 +169,7 @@ with col_mid:
     st.markdown("Explore the dataset's characteristics and distribution of features.")
 
 # --- Univariate Histogram Section ---
-with col_mid:
-    with st.expander("📊 Univariate Analysis: Histograms of Housing Features", expanded=False):
+    with st.expander("📊 Univariate Analysis: Histograms of Housing Features"):
         st.markdown("""
     Let's look at our data distribution using **univariate analysis** (analysis of one variable at a time).  
     Here's what we might look for when examining histograms:
@@ -200,14 +178,8 @@ with col_mid:
     - **Outliers**: Extreme values can harm model performance under low-noise assumptions.
     - **Odd patterns**: Abnormalities in data can negatively impact predictions.
     - **Axis scale**: Large differences in feature magnitudes can mislead models
-        
     """)
-
-    # Plot histograms for all numeric columns
-        axes = df_california.hist(bins=40, figsize=(7.5, 4.5), color='skyblue', edgecolor='black')
-        plt.tight_layout()
-        st.pyplot(plt.gcf())
-
+        st.image(Image.open(EDA_HIST), use_container_width=True)
         # Add detailed histogram interpretation below plot
         st.markdown("""
 ### 🧾 Odd Patterns & Outliers  
@@ -225,38 +197,10 @@ with col_mid:
 
 These characteristics should be kept in mind for potential transformation or scaling before modeling.
         """)
-
+        
 # --- Correlation Matrix Plotting Function ---
-def corrMat(df):
-    corr_mat = df.corr().round(2)
 
-    # Set up the matplotlib figure
-    f, ax = plt.subplots(figsize=(6, 6))
-
-    # Create a mask for the upper triangle
-    mask = np.zeros_like(corr_mat, dtype=np.bool_)  # Updated type
-    mask[np.triu_indices_from(mask)] = True
-
-    # Draw the heatmap
-    sns.heatmap(
-        corr_mat,
-        mask=mask,
-        vmin=-1,
-        vmax=1,
-        center=0,
-        cmap='plasma',
-        square=True,
-        linewidths=0.5,
-        annot=True,
-        cbar=False,
-        ax=ax
-    )
-    st.pyplot(f)
-
-
-        # --- Bivariate correlation matrix ---
-with col_mid:
-    with st.expander("📊 Bivariate correlation matrix", expanded=False):
+    with st.expander("📊 Bivariate Correlation Matrix"):
         st.markdown("""
     ### 🧮 Bivariate Correlation Matrix
 
@@ -273,8 +217,7 @@ A **correlation matrix** is a fast and effective way to gain insight into potent
 We use this matrix to understand which features are worth keeping, transforming, or dropping before modeling.
         
     """)
-        # Call correlation matrix plot
-        corrMat(df_california.drop(columns='MedHouseVal'))
+        st.image(Image.open(EDA_CORR), use_container_width=True)
         st.markdown("""
 ### 📌 Interpretation: Target Variable Relationships
 
@@ -283,10 +226,10 @@ We use this matrix to understand which features are worth keeping, transforming,
 - Such low values may indicate a **nonlinear relationship**, which can still carry predictive power — just not in a linear sense.
 - That said, for **simpler models** (e.g., linear regressors), it's often advised to drop these weakly correlated features, as they’re less likely to contribute meaningfully and might introduce noise.
 """)
-
-with col_mid:
+        
 # --- Bivariate Scatter Plot Section ---
-    with st.expander("🔍 Bivariate Analysis: Scatter Plot Matrix", expanded=False):
+
+    with st.expander("🔍 Bivariate Scatter Matrix", expanded=False):
         st.markdown("""
 Bivariate scatter plots (or pairplots) are **very insightful** for exploring relationships between two variables.  
 They help reveal patterns, clusters, correlations, and potential outliers.
@@ -299,29 +242,7 @@ They help reveal patterns, clusters, correlations, and potential outliers.
 
 While we can use color labeling in scatter matrices, it often becomes hard to distinguish in crowded plots.
     """)
-
-    # Use actual column names from the California dataset
-        tlist = ['MedInc', 'AveRooms', 'HouseAge', 'Latitude', 'MedHouseVal', 'Population']
-        selected_df = df_california[tlist].copy()
-
-    # Add income group for color
-        selected_df["IncomeGroup"] = pd.qcut(selected_df["MedInc"], q=4, labels=["Low", "Medium", "High", "Very High"])
-
-        st.markdown("✅ **Color-coded by Median Income Group (quartiles)**")
-
-    # Plot PairGrid
-        grid = sns.PairGrid(
-            selected_df,
-            vars=tlist,
-            hue="IncomeGroup",
-            corner=True,
-            diag_sharey=False
-        )
-        grid.map_lower(sns.scatterplot, alpha=0.5)
-        grid.map_diag(sns.kdeplot, fill=True)
-        grid.add_legend()
-
-        st.pyplot(grid.fig)
+        st.image(Image.open(EDA_PAIR), use_container_width=True)
         st.markdown("""
 ### 🧾 Relating to `median_house_value`
 
@@ -339,6 +260,7 @@ While we can use color labeling in scatter matrices, it often becomes hard to di
 - Finally, many features differ significantly in **axis scale**.  
   Larger values might be mistakenly interpreted as more important by some models, so **feature scaling should definitely be considered**.
     """)
+
 
 # Geospatial Plot Function (Plotly-Based)
 def plot_geo_feature(df, feature, map_height=450):
@@ -393,9 +315,7 @@ Common tools: `geopandas`, `folium`, `plotly`, and for 3D: `k3d`, `pyvista`
 with col_right:
     with st.expander("🧠 Model Explainability with SHAP", expanded=True):
         st.subheader("🔍 Feature Importance & Model Overview")
-
         tab1, tab2, tab3 = st.tabs(["📊 Beeswarm Plot", "📉 Bar Plot", "🧠 Model Overview"])
-
         with tab1:
             st.markdown("""
             **SHAP Beeswarm Plot**  
@@ -406,7 +326,6 @@ with col_right:
             """)
             shap.summary_plot(shap_values, shap_X, show=False)
             st.pyplot(plt.gcf())
-
         with tab2:
             st.markdown("""
             **SHAP Bar Plot**  
@@ -416,7 +335,6 @@ with col_right:
             """)
             shap.summary_plot(shap_values, shap_X, plot_type="bar", show=False)
             st.pyplot(plt.gcf())
-
         with tab3:
             st.markdown("""
             ### 🤖 Model Overview: Random Forest Regressor  
@@ -444,4 +362,5 @@ with col_right:
             ---
             ### 📊 Descriptive Statistics of Input Features
             """)
+            
             st.dataframe(X_full.describe().T.style.format("{:.2f}"))

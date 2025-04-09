@@ -1,1 +1,1 @@
-web: streamlit run Housing-price-ml-model-streamlit.py
+web: sh setup.sh && streamlit run Housing-price-ml-model-streamlit.py

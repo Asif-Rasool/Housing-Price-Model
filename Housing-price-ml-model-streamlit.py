@@ -3,22 +3,20 @@ import pandas as pd
 import shap
 import matplotlib.pyplot as plt
 import pickle
+import gdown  # <-- NEW
 from PIL import Image
 import os
-import requests
 from sklearn.datasets import fetch_california_housing
 import plotly.express as px
 
 # --- Page config ---
 st.set_page_config(layout="wide")
 
-# --- Helper to download from Google Drive ---
+# --- Helper to download from Google Drive using gdown ---
 def download_from_drive(file_id, output_path):
-    url = f"https://drive.google.com/uc?export=download&id={file_id}"
+    url = f"https://drive.google.com/uc?id={file_id}"
     if not os.path.exists(output_path):
-        response = requests.get(url)
-        with open(output_path, 'wb') as f:
-            f.write(response.content)
+        gdown.download(url, output_path, quiet=False)
 
 # --- Google Drive file IDs ---
 MODEL_FILE_ID = "1ZtvYIBsA5orD6i0FtXRDO9RIffSt4S4t"
@@ -69,7 +67,7 @@ with st.expander("ℹ️ About"):
 - `scikit-learn` for machine learning  
 - `pickle` for model serialization  
 - `Pillow` for image display  
-- `requests` for downloading files from Google Drive  
+- `gdown` for downloading large files from Google Drive  
 
 **Data source:** [California Housing Prices](https://www.kaggle.com/datasets/camnugent/california-housing-prices?resource=download)
 
@@ -81,7 +79,6 @@ Research Economist, Southeastern Louisiana University
 📧 [asif.rasool@southeastern.edu](mailto:asif.rasool@southeastern.edu)  
 _Last updated: April 7, 2025_
 """)
-
 
 # --- Load full dataset for input slider ranges ---
 housing = fetch_california_housing(as_frame=True)
@@ -109,20 +106,12 @@ df_input = user_input_features()
 prediction = model.predict(df_input)
 
 # --- Display maps ---
-
 st.write("---")
-
 
 # Sample 1000 points for map performance
 df_sample = df_california.sample(1000, random_state=42).copy()
-
-# Prepare inputs
 X_map = df_sample.drop(columns="MedHouseVal")
-
-# Predict values using the same model
 df_sample["PredictedPrice"] = model.predict(X_map) * 100000
-
-
 
 # --- Layout with three columns ---
 col_left, col_mid, col_right = st.columns([0.1, 1.5, 1])
@@ -137,19 +126,12 @@ with col_mid:
     st.success(f"🏡 **Estimated Value:** ${prediction[0] * 100000:,.2f}")
     st.write("---")
 
-
     with st.expander("🗺️ Geospatial View of Predicted Housing Prices", expanded=False):
-        # Sample 1000 points for map performance
         df_sample = df_california.sample(1000, random_state=42).copy()
-
-        # Prepare inputs
         X_map = df_sample.drop(columns="MedHouseVal")
         df_sample["PredictedPrice"] = model.predict(X_map) * 100000
-
-        # Optional: rename MedInc to avoid hover conflict
         df_sample.rename(columns={"MedInc": "MedianIncome"}, inplace=True)
 
-        # Create Plotly map
         fig = px.scatter_mapbox(
             df_sample,
             lat="Latitude",
@@ -171,7 +153,6 @@ with col_mid:
         )
 
         st.plotly_chart(fig, use_container_width=True)
-
 
 with col_right:
     with st.expander("🧠 Model Explainability with SHAP", expanded=True):
@@ -227,10 +208,4 @@ with col_right:
             ---
             ### 📊 Descriptive Statistics of Input Features
             """)
-
             st.dataframe(X_full.describe().T.style.format("{:.2f}"))
-
-
-
-
-

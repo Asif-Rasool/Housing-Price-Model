@@ -1,0 +1,6 @@
+# Ignore model and data files
+*.pkl
+*.joblib
+__pycache__/
+.env
+.DS_Store

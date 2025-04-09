@@ -57,6 +57,7 @@ st.image(image, use_container_width=True)
 st.markdown("""
 # AI-Powered House Price Prediction 
 ### Using Random Forest Ensembles for Real Estate Insights
+##### Developed by Asif Rasool, Southeastern Louisiana University
 
 """)
 st.write('---')
@@ -64,26 +65,47 @@ st.write('---')
 # --- About section ---
 with st.expander("ℹ️ About"):
     st.markdown("""
-**Python libraries used:**  
-- `streamlit` for building the app  
-- `pandas` for data manipulation  
-- `matplotlib` for plotting SHAP charts  
-- `shap` for model explainability  
-- `scikit-learn` for machine learning  
-- `pickle` for model serialization  
-- `Pillow` for image display  
-- `gdown` for downloading large files from Google Drive  
-
-**Data source:** [California Housing Prices](https://www.kaggle.com/datasets/camnugent/california-housing-prices?resource=download)
+This interactive app demonstrates the use of **Artificial Intelligence** and **Machine Learning** to predict housing prices in California using real-world census data.  
+It leverages exploratory data analysis (EDA), model interpretability techniques, and interactive visualizations to provide insights into the housing market.
 
 ---
-**Asif Rasool**, Ph.D.  
+
+### 🧰 **Tools & Libraries Used**
+
+- **Streamlit** – App framework for interactive web dashboards  
+- **scikit-learn** – Machine learning modeling (Random Forest Regressor)  
+- **SHAP** – Explainable AI for feature importance  
+- **pandas**, **numpy** – Data manipulation and numerical computing  
+- **matplotlib**, **seaborn** – Statistical and SHAP visualizations  
+- **plotly** – Interactive maps and geospatial visualizations  
+- **gdown** – Securely download large model assets from Google Drive  
+- **Pillow** – Display and manage image headers
+
+---
+
+### 📦 **Dataset Source**
+- [California Housing Prices Dataset (Kaggle)](https://www.kaggle.com/datasets/camnugent/california-housing-prices?resource=download)
+
+Originally published by the U.S. Census Bureau, this dataset includes:
+- Median income  
+- House age  
+- Rooms & bedrooms per household  
+- Population and occupancy  
+- Latitude and longitude
+
+---
+
+**Asif Rasool, Ph.D.**  
 Research Economist, Southeastern Louisiana University  
 📍 1514 Martens Drive, Hammond, LA 70401  
 📞 985-549-3831  
 📧 [asif.rasool@southeastern.edu](mailto:asif.rasool@southeastern.edu)  
-_Last updated: April 7, 2025_
-""")
+🌐 [Work Website](https://www.southeastern.edu/employee/asif-rasool/)  
+🔗 [GitHub Repository](https://github.com/Asif-Rasool/Housing-Price-Model)
+
+_Last updated: April 9, 2025_
+    """)
+
 
 # --- Load full dataset for input slider ranges ---
 housing = fetch_california_housing(as_frame=True)

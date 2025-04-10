@@ -15,6 +15,23 @@ import seaborn as sns
 # --- Page config ---
 st.set_page_config(layout="wide")
 
+# # --- Full‑width, 2‑inch‑high banner with no text ---
+# banner_html = """
+# <style>
+#   .top-banner {
+#     position: relative;
+#     left: 50%;
+#     margin-left: -50vw;
+#     width: 100vw;
+#     height: 1.8in;                  /* fixed height of 2 inches */
+#     background-color: #1A5632;    /* SLU green Pantone 357 */
+#   }
+# </style>
+# <div class="top-banner"></div>
+# """
+
+# st.markdown(banner_html, unsafe_allow_html=True)
+
 @st.cache_resource
 def download_from_drive(file_id, output_path):
     url = f"https://drive.google.com/uc?id={file_id}"
@@ -95,8 +112,8 @@ st.write('---')
 # --- About section ---
 with st.expander("ℹ️ About"):
     st.markdown("""
-This interactive app demonstrates the use of **Artificial Intelligence** and **Machine Learning** to predict housing prices in California using real-world census data.  
-It leverages exploratory data analysis (EDA), model interpretability techniques, and interactive visualizations to provide insights into the housing market.
+- This interactive dashboard demonstrates the use of **Artificial Intelligence** and **Machine Learning** to predict housing prices in California using real-world census data.  
+- It leverages exploratory data analysis (EDA), model interpretability techniques, and interactive visualizations to provide insights into the housing market.
 
 ---
 

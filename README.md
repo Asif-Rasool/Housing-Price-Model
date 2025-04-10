@@ -2,7 +2,7 @@
 
 This is an interactive [Streamlit](https://streamlit.io/) web application that predicts **median house prices in California** using a trained **Random Forest Regressor** model. It also provides model explainability through **SHAP** plots and a **map-based visualization** of predictions.
 
-[![Streamlit App](https://img.shields.io/badge/Streamlit-App-FF4B4B?logo=streamlit&logoColor=white)](https://share.streamlit.io/)  
+[![Streamlit App](https://img.shields.io/badge/Streamlit-App-FF4B4B?logo=streamlit&logoColor=white)](https://southeastern-housing-price-model.streamlit.app/)  
 *Author: Asif Rasool, Ph.D. — Research Economist, Southeastern Louisiana University*
 
 ---

@@ -15,7 +15,7 @@ import seaborn as sns
 # --- Page config ---
 st.set_page_config(layout="wide")
 
-# @st.cache_data
+@st.cache_resource
 def download_from_drive(file_id, output_path):
     url = f"https://drive.google.com/uc?id={file_id}"
     if not os.path.exists(output_path):
@@ -45,13 +45,35 @@ download_from_drive(EDA_HIST_ID, EDA_HIST)
 download_from_drive(EDA_CORR_ID, EDA_CORR)
 download_from_drive(EDA_PAIR_ID, EDA_PAIR)
 
-# --- Load model and SHAP data ---
-with open(MODEL_PATH, 'rb') as f:
-    model = pickle.load(f)
-with open(SHAP_PATH, 'rb') as f:
-    shap_values = pickle.load(f)
-with open(X_PATH, 'rb') as f:
-    shap_X = pickle.load(f)
+@st.cache_resource
+def load_artifacts():
+    # If you want to convert your existing pickle → joblib for mmap:
+    # with open(MODEL_PATH, 'rb') as f:
+    #     rf = pickle.load(f)
+    # dump(rf, 'model.joblib', compress=3)
+    #
+    # Then below you’d do:
+    # model = load('model.joblib', mmap_mode='r')
+    #
+    # But to keep using pickle directly, you can do:
+    import pickle
+    with open(MODEL_PATH, 'rb') as f:
+        model = pickle.load(f)
+    with open("shap_values.pkl", 'rb') as f:
+        shap_values = pickle.load(f)
+    with open("X_features.pkl", 'rb') as f:
+        shap_X = pickle.load(f)
+    return model, shap_values, shap_X
+
+model, shap_values, shap_X = load_artifacts()
+
+# # --- Load model and SHAP data ---
+# with open(MODEL_PATH, 'rb') as f:
+#     model = pickle.load(f)
+# with open(SHAP_PATH, 'rb') as f:
+#     shap_values = pickle.load(f)
+# with open(X_PATH, 'rb') as f:
+#     shap_X = pickle.load(f)
 
 # --- Load and display header image ---
 image_path = os.path.join(os.path.dirname(__file__), "Housing2.jpg")

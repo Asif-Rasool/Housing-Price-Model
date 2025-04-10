@@ -1,8 +1,3 @@
-
-
-### ✅ README.md — California Housing Price Prediction App
-
-```markdown
 # 🏡 California Housing Price Prediction App
 
 This is an interactive [Streamlit](https://streamlit.io/) web application that predicts **median house prices in California** using a trained **Random Forest Regressor** model. It also provides model explainability through **SHAP** plots and a **map-based visualization** of predictions.
@@ -11,6 +6,17 @@ This is an interactive [Streamlit](https://streamlit.io/) web application that p
 *Author: Asif Rasool, Ph.D. — Research Economist, Southeastern Louisiana University*
 
 ---
+
+## 📦 Features
+
+- 🧠 Predicts **median house value** from 8 housing and geographic inputs  
+- 📈 Interactive **SHAP beeswarm and bar plots** for feature importance  
+- 🗺️ **Geospatial Plotly map** showing predicted prices across California  
+- 📥 Loads model from **Google Drive** at runtime (no `.pkl` in repo)  
+- 🎨 Custom UI with a **top banner**, **expander sections**, and **tabs**
+
+---
+
 
 ## 📦 Features
 

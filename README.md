@@ -1,5 +1,3 @@
-Absolutely, Asif! Here's a **comprehensive and professional `README.md`** for your GitHub repo:
-
 ---
 
 ### ✅ README.md — California Housing Price Prediction App

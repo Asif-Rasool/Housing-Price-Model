@@ -15,7 +15,7 @@ import seaborn as sns
 # --- Page config ---
 st.set_page_config(layout="wide")
 
-@st.cache_data
+# @st.cache_data
 def download_from_drive(file_id, output_path):
     url = f"https://drive.google.com/uc?id={file_id}"
     if not os.path.exists(output_path):

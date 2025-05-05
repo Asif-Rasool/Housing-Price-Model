@@ -1,0 +1,55 @@
+name: 🚀 CI/CD Streamlit → Cloud Run
+
+# Trigger on pushes to main (and only rebuild when key files change)
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Housing-price-ml-model-streamlit.py"
+      - "requirements.txt"
+      - ".github/workflows/deploy.yml"
+
+# Prevent overlap if you push again before a prior deploy finishes
+concurrency:
+  group: deploy-streamlit-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCP_REGION: ${{ secrets.GCP_REGION }}
+  SERVICE_NAME: ${{ secrets.CLOUD_RUN_SERVICE }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Check out your code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2️⃣ Authenticate to GCP
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      # 3️⃣ (Optional) Verify your key files are here
+      - name: List workspace
+        run: |
+          echo "Found Streamlit script:"
+          ls -1 Housing-price-ml-model-streamlit.py
+          echo "Found requirements:"
+          cat requirements.txt
+
+      # 4️⃣ Deploy via Buildpacks (no Dockerfile needed)
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "${{ env.SERVICE_NAME }}" \
+            --source . \
+            --region "${{ env.GCP_REGION }}" \
+            --platform managed \
+            --allow-unauthenticated \
+            --quiet
